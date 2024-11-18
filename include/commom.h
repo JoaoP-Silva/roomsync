@@ -43,6 +43,7 @@ struct thread
  * struct queue* queue - The threads queue
  * int queue_size - The number of threads in the queue
  * pthread_mutex_t queue_mutex - Mutex to control the access in queue
+ * pthread_cond_t cond - Condition variable to avoid busy waiting
  */
 struct room 
 {
@@ -51,6 +52,7 @@ struct room
     int active_threads;
     struct queue* queue;
     pthread_mutex_t mutex;
+    pthread_cond_t cond;
 };
 
 

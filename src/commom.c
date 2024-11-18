@@ -81,6 +81,7 @@ struct env* initialize_env()
         _rooms[i].queue->tail = NULL;
 
         pthread_mutex_init(&_rooms[i].mutex, NULL);
+        pthread_cond_init(&_rooms[i].cond, NULL);
     }
 
     struct env* env = (struct env*)malloc(sizeof(env));
@@ -157,6 +158,11 @@ void leave_room(struct thread* t, struct env* env)
         struct room* curr_room = &env->rooms[curr_room_idx];
         pthread_mutex_lock(&curr_room->mutex);
         curr_room->active_threads -= 1;
+        
+        // signal to mark the room as free
+        if (curr_room->active_threads == 0)
+            pthread_cond_signal(&curr_room->cond);
+
         pthread_mutex_unlock(&curr_room->mutex);
     }
 }
@@ -187,16 +193,14 @@ void* run_thread(void* _args)
         {
             if(my_thread->queue_pos == 3){
                 // wait for the room to be empty
-                while(1)
-                {
-                    pthread_mutex_lock(&next_room->mutex);
-                    if(next_room->active_threads == 0) break;
-                    else pthread_mutex_unlock(&next_room->mutex);
-                }
+                pthread_mutex_lock(&next_room->mutex);
+                while(next_room->active_threads > 0)
+                    pthread_cond_wait(&next_room->cond, &next_room->mutex);
+
                 pthread_mutex_unlock(&next_room->mutex);
+                
                 // give the room access for the first 3 threads 
                 let_in(next_room, args->env);
-                pthread_mutex_unlock(&next_room->mutex);
             }
 
         } while (!my_thread->free_to_go);
