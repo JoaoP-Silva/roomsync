@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude
+CFLAGS = -pthread -Wall -Iinclude
 SRC_DIR = src
 OBJ_DIR = obj
 BUILD_DIR = bin
