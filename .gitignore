@@ -1,0 +1,7 @@
+# .o files
+*.o
+# binaries 
+*.out
+bin/**
+#vscode 
+.vscode/**
